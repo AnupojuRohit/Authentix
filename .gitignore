@@ -1,0 +1,21 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Dataset (IGNORE EVERYTHING)
+dataset/
+
+# Models
+backend/saved_models/
+
+# Node
+node_modules/
+.next/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env

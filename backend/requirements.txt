@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+python-multipart
+# Use standard torch version placeholder. User must install CUDA version via PyTorch website instructions for Windows.
+torch
+torchvision
+numpy
+pandas
+scikit-learn
+Pillow
+opencv-python-headless
+ultralytics
+open_clip_torch
+faiss-cpu
