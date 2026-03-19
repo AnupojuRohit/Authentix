@@ -1,21 +1,63 @@
-# Python
+# Python virtual environments
 venv/
+.venv/
+backend/venv/
+env/
+.env/
+
+# Python cache
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
 
-# Dataset (IGNORE EVERYTHING)
+# Dataset (ignore everything)
 dataset/
+data/
 
-# Models
+# ML Models & artifacts
 backend/saved_models/
+backend/faiss_indices/
+backend/embeddings/
+backend/ml/
+backend/test_outputs/
+*.pt
+*.pth
+*.onnx
+*.weights
+*.bin
+*.safetensors
 
 # Node
+frontend/node_modules/
 node_modules/
+frontend/.next/
 .next/
 
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Env
+# Environment variables
 .env
+.env.local
+.env.*.local
+*.env
+
+# Logs
+*.log
+logs/
+backend/uvicorn_log.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Misc
+structure.txt

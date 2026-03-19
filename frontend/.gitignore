@@ -39,3 +39,21 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# ML / Data
+backend/embeddings/
+backend/faiss_indices/
+data/
+
+# Python
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+.next/
+
+# Models
+*.pt
+*.pth
+*.h5
+*.pkl

@@ -2,7 +2,7 @@ import os
 import torch
 import open_clip
 import faiss
-import pickle
+import numpy as np
 from app.config import settings
 
 class ModelLoader:
@@ -16,6 +16,9 @@ class ModelLoader:
         self.clip_preprocess = None
         self.faiss_index = None
         self.faiss_labels = None
+        self.brand_faiss_indices = {}  # Cache loaded brand-specific FAISS indices
+        self.brand_faiss_dir = None
+        self.max_cached_brand_indices = 4
         self.is_loaded = False
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -45,19 +48,55 @@ class ModelLoader:
         else:
             print(f"[Model Loader] WARNING: YOLO model not found at {settings.YOLO_MODEL_PATH}")
 
-        # Load FAISS
-        if os.path.exists(settings.FAISS_INDEX_PATH):
-            print(f"[Model Loader] Loading FAISS index from {settings.FAISS_INDEX_PATH}")
-            self.faiss_index = faiss.read_index(settings.FAISS_INDEX_PATH)
-            
-            labels_path = settings.FAISS_INDEX_PATH.replace("faiss_index.bin", "labels.pkl")
-            if os.path.exists(labels_path):
-                with open(labels_path, "rb") as f:
-                    self.faiss_labels = pickle.load(f)
+        # Load FAISS (Skipping 9GB Global Index to prevent OOM/Crash on startup)
+        print("[Model Loader] Skipping 9GB Global FAISS index for startup stability.")
+        print("[Model Loader] Using brand-specific indices lazily instead.")
+        self.faiss_index = None
+        self.faiss_labels = None
+        
+        # Detect brand-specific FAISS directory (brand indices are loaded lazily)
+        backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        candidate_dirs = [
+            os.path.join(backend_dir, "faiss_indices"),
+            os.path.join(backend_dir, "embeddings", "faiss_indices"),
+        ]
+        self.brand_faiss_dir = next((d for d in candidate_dirs if os.path.exists(d)), None)
+        if self.brand_faiss_dir:
+            print(f"[Model Loader] Brand FAISS directory detected: {self.brand_faiss_dir}")
+            print("[Model Loader] Brand indices will be loaded lazily on demand.")
         else:
-            print(f"[Model Loader] WARNING: FAISS index not found at {settings.FAISS_INDEX_PATH}")
+            print(
+                "[Model Loader] WARNING: Brand FAISS indices directory not found. "
+                f"Checked: {candidate_dirs}"
+            )
             
         self.is_loaded = True
+
+    def get_brand_index(self, brand: str):
+        """Lazily load and cache a brand-specific FAISS index with bounded memory usage."""
+        if brand in self.brand_faiss_indices:
+            return self.brand_faiss_indices[brand]
+
+        if not self.brand_faiss_dir:
+            return None
+
+        index_path = os.path.join(self.brand_faiss_dir, f"{brand}.index")
+        if not os.path.exists(index_path):
+            return None
+
+        try:
+            idx = faiss.read_index(index_path)
+        except Exception as e:
+            print(f"[Model Loader] WARNING: Failed to load brand index {brand}: {e}")
+            return None
+
+        # Simple bounded cache eviction to avoid unbounded RAM growth
+        if len(self.brand_faiss_indices) >= self.max_cached_brand_indices:
+            oldest_brand = next(iter(self.brand_faiss_indices))
+            self.brand_faiss_indices.pop(oldest_brand, None)
+
+        self.brand_faiss_indices[brand] = idx
+        return idx
 
 # Global instance
 model_loader = ModelLoader()

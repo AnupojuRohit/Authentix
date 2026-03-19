@@ -12,12 +12,15 @@ export default function UploadBox({
     const [preview, setPreview] = useState<string | null>(null);
     const [brand, setBrand] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [loadingStatus, setLoadingStatus] = useState<string>('Analyzing product...');
 
     const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selected = e.target.files?.[0];
         if (selected) {
             setFile(selected);
             setPreview(URL.createObjectURL(selected));
+            setError(null);
         }
     };
 
@@ -27,26 +30,42 @@ export default function UploadBox({
         if (dropped) {
             setFile(dropped);
             setPreview(URL.createObjectURL(dropped));
+            setError(null);
         }
     };
 
     const submit = async () => {
         if (!file) {
-            alert('Please upload a product image first.');
+            setError('Please upload a product image first.');
             return;
         }
         if (!brand) {
-            alert('Please select a brand.');
+            setError('Please select a brand.');
             return;
         }
 
         setIsLoading(true);
+        setError(null);
+        setLoadingStatus('Analyzing product...');
+        
         try {
             const apiResult = await verifyProduct(file, brand);
             onResult(apiResult);
         } catch (error) {
             console.error("Verification failed", error);
-            alert("Verification failed. Make sure the backend is running.");
+            const errorMessage = error instanceof Error ? error.message : "Verification failed";
+            
+            if (errorMessage.includes("timeout")) {
+                setError(`${errorMessage} Please try again with a clearer product image.`);
+            } else if (errorMessage.includes("not yet supported")) {
+                setError(`This brand is currently not supported. Please check the available brands.`);
+            } else if (errorMessage.includes("not an image")) {
+                setError(`Invalid file format. Please upload a valid image file (PNG, JPG, WEBP).`);
+            } else if (errorMessage.includes("backend")) {
+                setError(`Backend service is not running. Please ensure the verification server is online.`);
+            } else {
+                setError(`Analysis failed: ${errorMessage}`);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -57,7 +76,42 @@ export default function UploadBox({
             {isLoading && (
                 <div className="loading-overlay show">
                     <div className="spinner"></div>
-                    <div className="loading-text">Analyzing product...</div>
+                    <div className="loading-text">{loadingStatus}</div>
+                    <div style={{ fontSize: '0.9rem', marginTop: '0.5rem', opacity: 0.8 }}>
+                        This typically takes 3-5 seconds
+                    </div>
+                </div>
+            )}
+
+            {error && (
+                <div style={{
+                    backgroundColor: '#fee',
+                    border: '1px solid #faa',
+                    borderRadius: '4px',
+                    padding: '12px',
+                    marginBottom: '16px',
+                    color: '#c33',
+                    fontSize: '0.9rem'
+                }}>
+                    <strong>⚠️ Error:</strong> {error}
+                    {error.includes("timeout") && (
+                        <div style={{ marginTop: '8px' }}>
+                            <button 
+                                onClick={submit} 
+                                style={{
+                                    background: '#c33',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    padding: '6px 12px',
+                                    cursor: 'pointer'
+                                }}
+                                disabled={isLoading}
+                            >
+                                Try Again
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -88,21 +142,32 @@ export default function UploadBox({
                     <option value="Nike">Nike</option>
                     <option value="Adidas">Adidas</option>
                     <option value="Gucci">Gucci</option>
-                    <option value="Louis Vuitton">Louis Vuitton</option>
-                    <option value="Supreme">Supreme</option>
-                    <option value="Puma">Puma</option>
-                    <option value="Balenciaga">Balenciaga</option>
-                    <option value="Off-White">Off-White</option>
-                    <option value="New Balance">New Balance</option>
+                    <option value="Hoka">Hoka</option>
+                    <option value="Timberland">Timberland</option>
+                    <option value="Bottega Veneta">Bottega Veneta</option>
+                    <option value="Celine">Celine</option>
+                    <option value="Vans">Vans</option>
                     <option value="Versace">Versace</option>
-                    <option value="Ralph Lauren">Ralph Lauren</option>
-                    <option value="Stone Island">Stone Island</option>
+                    <option value="Valentino">Valentino</option>
+                    <option value="Maison Margiela">Maison Margiela</option>
+                    <option value="Converse">Converse</option>
+                    <option value="Rick Owens">Rick Owens</option>
+                    <option value="New Balance">New Balance</option>
+                    <option value="Salomon">Salomon</option>
+                    <option value="Louis Vuitton">Louis Vuitton</option>
+                    <option value="Puma">Puma</option>
+                    <option value="Asics">Asics</option>
+                    <option value="Yeezy">Yeezy</option>
+                    <option value="Fendi">Fendi</option>
+                    <option value="Prada">Prada</option>
                 </select>
             </div>
 
             <button 
                 className="verify-btn" 
-                onClick={submit}
+                onClick={() => {
+                    void submit();
+                }}
                 disabled={isLoading}
             >
                 🔍 Verify Authenticity
