@@ -57,3 +57,51 @@ node_modules/
 *.pth
 *.h5
 *.pkl
+# Virtual environments
+backend/.venv/
+.venv/
+venv/
+backend/venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Dataset
+dataset/
+data/
+
+# Large model files and embeddings
+backend/saved_models/faiss_index.bin
+backend/embeddings/
+backend/ml/*.pt
+backend/ml/yolo26n.pt
+backend/ml/yolov8n.pt
+
+# Keep these (small, important)
+# backend/saved_models/brand_thresholds.json  <- KEEP
+# backend/saved_models/brand_dna.pkl          <- KEEP
+# backend/faiss_indices/                      <- KEEP (per brand indices)
+
+# Node
+frontend/node_modules/
+frontend/.next/
+
+# Logs and test outputs
+backend/uvicorn_log.txt
+backend/test_outputs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Env
+.env
+.env.local
+*.env
+
+# Misc
+structure.txt

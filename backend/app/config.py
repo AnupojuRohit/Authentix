@@ -1,15 +1,22 @@
 import os
 
+# Absolute path to the backend directory regardless of where you run from
+BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
 class Settings:
     PROJECT_NAME: str = "Authentix AI"
     VERSION: str = "1.0.0"
-    
-    # Model Paths
-    YOLO_MODEL_PATH: str = os.getenv("YOLO_MODEL_PATH", "saved_models/yolo_logo_detector.pt")
-    FAISS_INDEX_PATH: str = os.getenv("FAISS_INDEX_PATH", "saved_models/faiss_index.bin")
-    CLIP_EMBEDDINGS_PATH: str = os.getenv("CLIP_EMBEDDINGS_PATH", "saved_models/clip_embeddings.pkl")
-    
+
+    # Absolute model paths - works no matter where you run uvicorn from
+    YOLO_MODEL_PATH: str = os.path.join(BACKEND_DIR, "saved_models", "yolo_logo_detector.pt")
+    FAISS_INDEX_PATH: str = os.path.join(BACKEND_DIR, "saved_models", "faiss_index.bin")
+    FAISS_INDICES_DIR: str = os.path.join(BACKEND_DIR, "faiss_indices")
+    SAVED_MODELS_DIR: str = os.path.join(BACKEND_DIR, "saved_models")
+    EMBEDDINGS_DIR: str = os.path.join(BACKEND_DIR, "embeddings")
+
     # Inference config
     SIMILARITY_THRESHOLD: float = 0.85
+
 
 settings = Settings()
