@@ -110,7 +110,7 @@ class AuthenticityService:
         Midpoint (score=72) maps to ~0.50 probability.
         """
         k = 0.12
-        prob = 1.0 / (1.0 + np.exp(-k * (score - 72.0)))
+        prob = 1.0 / (1.0 + np.exp(-k * (score - 65.0)))
         prob = float(np.clip(prob, 0.01, 0.99))
 
         if prob > 0.85:
@@ -161,7 +161,7 @@ class AuthenticityService:
 
         prob_auth, level = self._calibrate_confidence(overall)
         heatmap_b64 = self._get_heatmap(pil_image)
-        verdict = "authentic" if prob_auth >= 0.60 else "fake"
+        verdict = "authentic" if prob_auth >= 0.62 else "fake"
         processing_time = int((time.time() - start_time) * 1000)
 
         print(
